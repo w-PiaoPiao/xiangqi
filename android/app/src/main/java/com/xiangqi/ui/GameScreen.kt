@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -33,6 +34,7 @@ fun GameScreen(viewModel: GameViewModel = viewModel()) {
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFF5F0E8))
+            .systemBarsPadding()
             .padding(horizontal = 12.dp, vertical = 8.dp)
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -46,12 +48,18 @@ fun GameScreen(viewModel: GameViewModel = viewModel()) {
             modifier = Modifier.padding(bottom = 4.dp)
         )
 
-        Text(
-            text = debugLastTap.ifEmpty { "等待点击..." },
-            fontSize = 12.sp,
-            color = Color(0xFF666666),
-            modifier = Modifier.padding(bottom = 4.dp)
-        )
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(18.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = debugLastTap.ifEmpty { "等待点击..." },
+                fontSize = 12.sp,
+                color = Color(0xFF666666)
+            )
+        }
 
         BoardCanvas(
             board = board,
