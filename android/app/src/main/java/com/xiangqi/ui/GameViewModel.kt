@@ -86,7 +86,7 @@ class GameViewModel : ViewModel() {
     }
 
     private fun syncState() {
-        board = engine.board
+        board = Array(10) { r -> Array(9) { c -> engine.board[r][c] } }
         turn = engine.turn
         selectedPos = engine.selectedPos
         validMoves = engine.validMoves
