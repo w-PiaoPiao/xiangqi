@@ -11,3 +11,11 @@ Thumbs.db
 # Logs / temp
 *.log
 tmp/
+
+# Android
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/captures/
+android/.externalNativeBuild/
