@@ -1,0 +1,30 @@
+{
+  "module": {
+    "name": "entry",
+    "type": "entry",
+    "description": "中国象棋双人对弈",
+    "mainElement": "EntryAbility",
+    "deviceTypes": ["phone", "tablet", "2in1"],
+    "deliveryWithInstall": true,
+    "installationFree": false,
+    "pages": "$profile:main_pages",
+    "abilities": [
+      {
+        "name": "EntryAbility",
+        "srcEntry": "./ets/entryability/EntryAbility.ets",
+        "description": "中国象棋",
+        "icon": "$media:icon",
+        "label": "中国象棋",
+        "startWindowIcon": "$media:icon",
+        "startWindowBackground": "#F5F0E8",
+        "exported": true,
+        "skills": [
+          {
+            "entities": ["entity.system.home"],
+            "actions": ["action.system.home"]
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+DEVECO_HOME="/Applications/DevEco-Studio.app"
+HVIGOR="$DEVECO_HOME/Contents/tools/hvigor/bin/hvigorw"
+if [ -f "$HVIGOR" ]; then
+  exec "$HVIGOR" "$@"
+else
+  echo "Error: DevEco Studio not found at $DEVECO_HOME"
+  exit 1
+fi
