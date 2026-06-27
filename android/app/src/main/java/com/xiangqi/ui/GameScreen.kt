@@ -27,6 +27,7 @@ fun GameScreen(viewModel: GameViewModel = viewModel()) {
     val history by viewModel::history
     val capturedByRed by viewModel::capturedByRed
     val capturedByBlack by viewModel::capturedByBlack
+    val debugLastTap by viewModel::debugLastTap
 
     Column(
         modifier = Modifier
@@ -42,7 +43,14 @@ fun GameScreen(viewModel: GameViewModel = viewModel()) {
             fontWeight = FontWeight(600),
             color = Color(0xFF4A3728),
             letterSpacing = 4.sp,
-            modifier = Modifier.padding(bottom = 8.dp)
+            modifier = Modifier.padding(bottom = 4.dp)
+        )
+
+        Text(
+            text = debugLastTap.ifEmpty { "等待点击..." },
+            fontSize = 12.sp,
+            color = Color(0xFF666666),
+            modifier = Modifier.padding(bottom = 4.dp)
         )
 
         BoardCanvas(

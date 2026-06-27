@@ -29,6 +29,8 @@ class GameViewModel : ViewModel() {
         private set
     var capturedByBlack: List<Piece> by mutableStateOf(emptyList())
         private set
+    var debugLastTap: String by mutableStateOf("")
+        private set
 
     init {
         reset()
@@ -37,13 +39,15 @@ class GameViewModel : ViewModel() {
     fun onCellClick(pos: Pos) {
         if (status != GameStatus.PLAYING) return
 
+        debugLastTap = "点击 (${pos.row},${pos.col})"
+
         val piece = board[pos.row][pos.col]
 
         if (selectedPos == null) {
             if (piece != null && piece.color == turn) {
+                debugLastTap = "选中 (${pos.row},${pos.col}) ${piece.displayName}"
                 selectedPos = pos
                 validMoves = engine.getValidMoves(pos)
-                syncState()
             }
             return
         }
@@ -51,45 +55,50 @@ class GameViewModel : ViewModel() {
         val sel = selectedPos!!
 
         if (pos.row == sel.row && pos.col == sel.col) {
+            debugLastTap = "取消选中"
             selectedPos = null
             validMoves = emptyList()
-            syncState()
             return
         }
 
         if (piece != null && piece.color == turn) {
+            debugLastTap = "切换选中 (${pos.row},${pos.col}) ${piece.displayName}"
             selectedPos = pos
             validMoves = engine.getValidMoves(pos)
-            syncState()
             return
         }
 
         if (validMoves.any { it.row == pos.row && it.col == pos.col }) {
+            debugLastTap = "走棋 (${sel.row},${sel.col})→(${pos.row},${pos.col})"
             engine.executeMove(sel, pos)
-            syncState()
+            selectedPos = null
+            validMoves = emptyList()
+            syncBoard()
             return
         }
 
+        debugLastTap = "无效点击 (${pos.row},${pos.col})"
         selectedPos = null
         validMoves = emptyList()
-        syncState()
     }
 
     fun undo() {
         engine.undoMove()
-        syncState()
+        selectedPos = null
+        validMoves = emptyList()
+        syncBoard()
     }
 
     fun reset() {
         engine.initBoard()
-        syncState()
+        selectedPos = null
+        validMoves = emptyList()
+        syncBoard()
     }
 
-    private fun syncState() {
+    private fun syncBoard() {
         board = Array(10) { r -> Array(9) { c -> engine.board[r][c] } }
         turn = engine.turn
-        selectedPos = engine.selectedPos
-        validMoves = engine.validMoves
         inCheck = engine.inCheck
         status = engine.status
         history = engine.history.toList()
