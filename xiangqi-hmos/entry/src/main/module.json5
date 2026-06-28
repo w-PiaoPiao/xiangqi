@@ -14,9 +14,9 @@
         "srcEntry": "./ets/entryability/EntryAbility.ets",
         "description": "中国象棋",
         "icon": "$media:icon",
-        "label": "中国象棋",
+        "label": "$string:app_name",
         "startWindowIcon": "$media:icon",
-        "startWindowBackground": "#F5F0E8",
+        "startWindowBackground": "$color:start_window_background",
         "exported": true,
         "skills": [
           {

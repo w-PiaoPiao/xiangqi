@@ -4,6 +4,13 @@ const COLS = 9
 const ROWS = 10
 const MARGIN_RATIO = 0.05
 
+class BoardLayout {
+  left: number = 0
+  top: number = 0
+  cellW: number = 0
+  cellH: number = 0
+}
+
 @Component
 export struct BoardCanvas {
   private context: CanvasRenderingContext2D = new CanvasRenderingContext2D()
@@ -122,14 +129,13 @@ export struct BoardCanvas {
     }
   }
 
-  calcLayout(): { left: number, top: number, cellW: number, cellH: number } {
-    const left = this.w * MARGIN_RATIO
-    const top = this.h * MARGIN_RATIO
-    return {
-      left, top,
-      cellW: (this.w - 2 * left) / (COLS - 1),
-      cellH: (this.h - 2 * top) / (ROWS - 1)
-    }
+  calcLayout(): BoardLayout {
+    const l = new BoardLayout()
+    l.left = this.w * MARGIN_RATIO
+    l.top = this.h * MARGIN_RATIO
+    l.cellW = (this.w - 2 * l.left) / (COLS - 1)
+    l.cellH = (this.h - 2 * l.top) / (ROWS - 1)
+    return l
   }
 
   build() {

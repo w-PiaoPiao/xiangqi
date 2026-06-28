@@ -4,7 +4,7 @@ const BOARD_ROWS = 10
 const BOARD_COLS = 9
 
 export class GameEngine {
-  board: (Piece | null)[][] = []
+  board: (Piece | null)[][] = [[]]
   turn: PieceColor = PieceColor.RED
   inCheck: boolean = false
   status: GameStatus = GameStatus.PLAYING
@@ -17,7 +17,12 @@ export class GameEngine {
   }
 
   initBoard(): void {
-    this.board = Array.from({ length: BOARD_ROWS }, () => Array(BOARD_COLS).fill(null))
+    this.board = []
+    for (let r = 0; r < BOARD_ROWS; r++) {
+      const row: (Piece | null)[] = []
+      for (let c = 0; c < BOARD_COLS; c++) row.push(null)
+      this.board.push(row)
+    }
 
     const backRank: PieceType[] = [
       PieceType.CHARIOT, PieceType.HORSE, PieceType.ELEPHANT,
@@ -82,11 +87,13 @@ export class GameEngine {
 
   private getGeneralMoves(row: number, col: number, piece: Piece): Pos[] {
     const moves: Pos[] = []
-    const [minR, maxR] = piece.color === PieceColor.RED ? [7, 9] : [0, 2]
+    const isRed = piece.color === PieceColor.RED
     const dirs = [[-1, 0], [1, 0], [0, -1], [0, 1]]
-    for (const [dr, dc] of dirs) {
-      const nr = row + dr, nc = col + dc
-      if (nr < minR || nr > maxR || nc < 3 || nc > 5) continue
+    for (let i = 0; i < 4; i++) {
+      const dr = dirs[i][0]; const dc = dirs[i][1]
+      const nr = row + dr; const nc = col + dc
+      if (isRed && (nr < 7 || nr > 9 || nc < 3 || nc > 5)) continue
+      if (!isRed && (nr < 0 || nr > 2 || nc < 3 || nc > 5)) continue
       const t = this.board[nr][nc]
       if (!t || t.color !== piece.color) moves.push(new Pos(nr, nc))
     }
@@ -95,10 +102,12 @@ export class GameEngine {
 
   private getAdvisorMoves(row: number, col: number, piece: Piece): Pos[] {
     const moves: Pos[] = []
-    const [minR, maxR] = piece.color === PieceColor.RED ? [7, 9] : [0, 2]
-    for (const [dr, dc] of [[-1, -1], [-1, 1], [1, -1], [1, 1]]) {
-      const nr = row + dr, nc = col + dc
-      if (nr < minR || nr > maxR || nc < 3 || nc > 5) continue
+    const isRed = piece.color === PieceColor.RED
+    const dirs = [[-1, -1], [-1, 1], [1, -1], [1, 1]]
+    for (let i = 0; i < 4; i++) {
+      const nr = row + dirs[i][0]; const nc = col + dirs[i][1]
+      if (isRed && (nr < 7 || nr > 9 || nc < 3 || nc > 5)) continue
+      if (!isRed && (nr < 0 || nr > 2 || nc < 3 || nc > 5)) continue
       const t = this.board[nr][nc]
       if (!t || t.color !== piece.color) moves.push(new Pos(nr, nc))
     }
@@ -140,13 +149,14 @@ export class GameEngine {
 
   private getChariotMoves(row: number, col: number, piece: Piece): Pos[] {
     const moves: Pos[] = []
-    for (const [dr, dc] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) {
-      let nr = row + dr, nc = col + dc
+    const dirs = [[-1, 0], [1, 0], [0, -1], [0, 1]]
+    for (let i = 0; i < 4; i++) {
+      let nr = row + dirs[i][0]; let nc = col + dirs[i][1]
       while (this.inBoard(nr, nc)) {
         const t = this.board[nr][nc]
         if (!t) moves.push(new Pos(nr, nc))
         else { if (t.color !== piece.color) moves.push(new Pos(nr, nc)); break }
-        nr += dr; nc += dc
+        nr += dirs[i][0]; nc += dirs[i][1]
       }
     }
     return moves
@@ -154,8 +164,9 @@ export class GameEngine {
 
   private getCannonMoves(row: number, col: number, piece: Piece): Pos[] {
     const moves: Pos[] = []
-    for (const [dr, dc] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) {
-      let nr = row + dr, nc = col + dc, jumped = false
+    const dirs = [[-1, 0], [1, 0], [0, -1], [0, 1]]
+    for (let i = 0; i < 4; i++) {
+      let nr = row + dirs[i][0]; let nc = col + dirs[i][1]; let jumped = false
       while (this.inBoard(nr, nc)) {
         const t = this.board[nr][nc]
         if (!jumped) {
@@ -164,7 +175,7 @@ export class GameEngine {
         } else {
           if (t) { if (t.color !== piece.color) moves.push(new Pos(nr, nc)); break }
         }
-        nr += dr; nc += dc
+        nr += dirs[i][0]; nc += dirs[i][1]
       }
     }
     return moves

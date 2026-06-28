@@ -4,6 +4,10 @@ import { GameView } from '../ui/GameView'
 @Component
 struct Index {
   build() {
-    GameView()
+    Column() {
+      GameView()
+    }
+    .width('100%')
+    .height('100%')
   }
 }
