@@ -17,13 +17,13 @@ export struct BoardCanvas {
   private w: number = 0
   private h: number = 0
 
-  board: (Piece | null)[][] = []
-  selectedPos: Pos | null = null
-  validMoves: Pos[] = []
-  redrawTrigger: number = 0
+  @Prop board: (Piece | null)[][] = []
+  @Prop selectedPos: Pos | null = null
+  @Prop validMoves: Pos[] = []
+  @Prop @Watch('onRedraw') redrawTrigger: number = 0
   onCellClick: ((pos: Pos) => void) | null = null
 
-  aboutToUpdate(): void {
+  onRedraw(): void {
     if (this.w > 0 && this.h > 0) {
       this.drawAll()
     }
@@ -102,16 +102,25 @@ export struct BoardCanvas {
       ctx.lineWidth = 1; ctx.stroke()
 
       ctx.fillStyle = '#fff'
-      ctx.font = `bold ${radius * 1.15}px sans-serif`
-      ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
+      ctx.font = `bold ${Math.floor(radius * 1.9)}px sans-serif`
+      ctx.textAlign = 'center'
+      ctx.textBaseline = 'middle'
       ctx.fillText(piece.displayName, cx, cy + 1)
     }
 
-    const dotR = Math.max(4, Math.min(l.cellW, l.cellH) * 0.1)
+    const dotR = Math.max(6, Math.min(l.cellW, l.cellH) * 0.18)
     for (const m of this.validMoves) {
+      const mx = l.left + m.col * l.cellW
+      const my = l.top + m.row * l.cellH
       ctx.beginPath()
-      ctx.arc(l.left + m.col * l.cellW, l.top + m.row * l.cellH, dotR, 0, Math.PI * 2)
-      ctx.fillStyle = 'rgba(39, 174, 96, 0.55)'; ctx.fill()
+      ctx.arc(mx, my, dotR, 0, Math.PI * 2)
+      ctx.fillStyle = 'rgba(39, 174, 96, 0.85)'
+      ctx.fill()
+      ctx.beginPath()
+      ctx.arc(mx, my, dotR + 2, 0, Math.PI * 2)
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)'
+      ctx.lineWidth = 1.5
+      ctx.stroke()
     }
 
     if (this.selectedPos) {
@@ -133,31 +142,35 @@ export struct BoardCanvas {
   }
 
   build() {
-    Canvas(this.context)
-      .width('100%')
-      .height('auto')
-      .aspectRatio(COLS / ROWS)
-      .onReady(() => {
-        this.w = this.context.width
-        this.h = this.context.height
-        this.drawAll()
-      })
-      .onAreaChange((_, newArea) => {
-        this.w = newArea.width as number
-        this.h = newArea.height as number
-        this.drawAll()
-      })
-      .onTouch((event: TouchEvent) => {
-        if (event.type === TouchType.Down) {
-          const x = event.touches[0].x
-          const y = event.touches[0].y
-          const l = this.calcLayout(this.w, this.h)
-          const col = Math.round((x - l.left) / l.cellW)
-          const row = Math.round((y - l.top) / l.cellH)
-          if (col >= 0 && col < COLS && row >= 0 && row < ROWS && this.onCellClick) {
-            this.onCellClick(new Pos(row, col))
+    Stack() {
+      Canvas(this.context)
+        .width('100%')
+        .height('100%')
+        .onReady(() => {
+          this.w = this.context.width
+          this.h = this.context.height
+          this.drawAll()
+        })
+        .onAreaChange((_, newArea) => {
+          this.w = newArea.width as number
+          this.h = newArea.height as number
+          this.drawAll()
+        })
+        .onTouch((event: TouchEvent) => {
+          if (event.type === TouchType.Down) {
+            const x = event.touches[0].x
+            const y = event.touches[0].y
+            const l = this.calcLayout(this.w, this.h)
+            const col = Math.round((x - l.left) / l.cellW)
+            const row = Math.round((y - l.top) / l.cellH)
+            if (col >= 0 && col < COLS && row >= 0 && row < ROWS && this.onCellClick) {
+              this.onCellClick(new Pos(row, col))
+            }
           }
-        }
-      })
+        })
+    }
+    .width('100%')
+    .aspectRatio(COLS / ROWS)
+    .backgroundColor('#DEB887')
   }
 }
