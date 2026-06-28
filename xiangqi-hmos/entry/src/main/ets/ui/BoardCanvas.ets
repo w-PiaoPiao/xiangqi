@@ -24,30 +24,29 @@ export struct BoardCanvas {
   onCellClick: ((pos: Pos) => void) | null = null
 
   aboutToUpdate(): void {
-    if (this.w > 0 && this.h > 0 && this.redrawTrigger >= 0) {
+    if (this.w > 0 && this.h > 0) {
       this.drawAll()
     }
   }
 
   drawAll(): void {
     const ctx = this.context
-    ctx.clearRect(0, 0, this.w, this.h)
+    const w = this.w
+    const h = this.h
+    ctx.clearRect(0, 0, w, h)
 
-    const l = this.calcLayout()
+    const l = this.calcLayout(w, h)
     const right = l.left + l.cellW * (COLS - 1)
     const bottom = l.top + l.cellH * (ROWS - 1)
 
-    // Board bg
     ctx.fillStyle = '#DEB887'
-    ctx.fillRect(0, 0, this.w, this.h)
+    ctx.fillRect(0, 0, w, h)
 
-    // Outer border
     ctx.strokeStyle = '#4A3728'
     ctx.lineWidth = 2
     ctx.strokeRect(l.left, l.top, right - l.left, bottom - l.top)
     ctx.lineWidth = 1
 
-    // Horizontal lines
     for (let row = 0; row < ROWS; row++) {
       const y = l.top + row * l.cellH
       ctx.beginPath()
@@ -56,7 +55,6 @@ export struct BoardCanvas {
       ctx.stroke()
     }
 
-    // Vertical lines (with river gap)
     for (let col = 0; col < COLS; col++) {
       const x = l.left + col * l.cellW
       if (col === 0 || col === COLS - 1) {
@@ -67,7 +65,6 @@ export struct BoardCanvas {
       }
     }
 
-    // Palace diagonals
     ctx.beginPath()
     ctx.moveTo(l.left + 3 * l.cellW, l.top); ctx.lineTo(l.left + 5 * l.cellW, l.top + 2 * l.cellH)
     ctx.stroke()
@@ -81,7 +78,6 @@ export struct BoardCanvas {
     ctx.moveTo(l.left + 5 * l.cellW, l.top + 7 * l.cellH); ctx.lineTo(l.left + 3 * l.cellW, l.top + 9 * l.cellH)
     ctx.stroke()
 
-    // Pieces
     const radius = Math.min(l.cellW, l.cellH) * 0.42
     for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
       const piece = this.board[r][c]
@@ -111,7 +107,6 @@ export struct BoardCanvas {
       ctx.fillText(piece.displayName, cx, cy + 1)
     }
 
-    // Valid move dots
     const dotR = Math.max(4, Math.min(l.cellW, l.cellH) * 0.1)
     for (const m of this.validMoves) {
       ctx.beginPath()
@@ -119,7 +114,6 @@ export struct BoardCanvas {
       ctx.fillStyle = 'rgba(39, 174, 96, 0.55)'; ctx.fill()
     }
 
-    // Selection highlight
     if (this.selectedPos) {
       const sx = l.left + this.selectedPos.col * l.cellW
       const sy = l.top + this.selectedPos.row * l.cellH
@@ -129,33 +123,35 @@ export struct BoardCanvas {
     }
   }
 
-  calcLayout(): BoardLayout {
+  calcLayout(w: number, h: number): BoardLayout {
     const l = new BoardLayout()
-    l.left = this.w * MARGIN_RATIO
-    l.top = this.h * MARGIN_RATIO
-    l.cellW = (this.w - 2 * l.left) / (COLS - 1)
-    l.cellH = (this.h - 2 * l.top) / (ROWS - 1)
+    l.left = w * MARGIN_RATIO
+    l.top = h * MARGIN_RATIO
+    l.cellW = (w - 2 * l.left) / (COLS - 1)
+    l.cellH = (h - 2 * l.top) / (ROWS - 1)
     return l
   }
 
   build() {
     Canvas(this.context)
       .width('100%')
+      .height('auto')
       .aspectRatio(COLS / ROWS)
       .onReady(() => {
         this.w = this.context.width
         this.h = this.context.height
+        this.drawAll()
       })
       .onAreaChange((_, newArea) => {
-        this.w = px2vp(newArea.width as number)
-        this.h = px2vp(newArea.height as number)
-        if (this.w > 0 && this.h > 0) this.drawAll()
+        this.w = newArea.width as number
+        this.h = newArea.height as number
+        this.drawAll()
       })
       .onTouch((event: TouchEvent) => {
         if (event.type === TouchType.Down) {
           const x = event.touches[0].x
           const y = event.touches[0].y
-          const l = new BoardLayoutCalculator(this.w, this.h)
+          const l = this.calcLayout(this.w, this.h)
           const col = Math.round((x - l.left) / l.cellW)
           const row = Math.round((y - l.top) / l.cellH)
           if (col >= 0 && col < COLS && row >= 0 && row < ROWS && this.onCellClick) {
@@ -163,15 +159,5 @@ export struct BoardCanvas {
           }
         }
       })
-  }
-}
-
-class BoardLayoutCalculator {
-  left: number; top: number; cellW: number; cellH: number
-  constructor(w: number, h: number) {
-    this.left = w * MARGIN_RATIO
-    this.top = h * MARGIN_RATIO
-    this.cellW = (w - 2 * this.left) / (COLS - 1)
-    this.cellH = (h - 2 * this.top) / (ROWS - 1)
   }
 }
