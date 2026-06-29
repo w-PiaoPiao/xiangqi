@@ -2,6 +2,7 @@ import { Piece, PieceType, PieceColor, Pos, Move, GameStatus } from '../model/Pi
 import { GameEngine } from '../engine/GameEngine'
 import { BoardCanvas } from './BoardCanvas'
 import { CapturedBox } from './CapturedBox'
+import display from '@ohos.display'
 
 function formatMove(move: Move): string {
   const name = move.piece.displayName
@@ -28,10 +29,21 @@ export struct GameView {
   @State capturedByRed: Piece[] = []
   @State capturedByBlack: Piece[] = []
   @State redrawTrigger: number = 0
+  @State breakpoint: string = 'sm'
 
   aboutToAppear(): void {
     this.engine.initBoard()
     this.syncBoard()
+    this.updateBreakpoint()
+  }
+
+  updateBreakpoint(): void {
+    try {
+      const d = display.getDefaultDisplaySync()
+      this.breakpoint = d.width >= 720 ? 'lg' : 'sm'
+    } catch (_) {
+      this.breakpoint = 'sm'
+    }
   }
 
   syncBoard(): void {
@@ -119,26 +131,37 @@ export struct GameView {
 
   build() {
     Column() {
-      Scroll() {
-        Column({ space: 12 }) {
-          this.titleArea()
-          this.boardArea()
-          this.statusBar()
-          this.controlBar()
-          this.capturedArea()
-          this.moveHistory()
+      if (this.breakpoint === 'lg') {
+        this.desktopLayout()
+      } else {
+        Scroll() {
+          Column({ space: 12 }) {
+            this.titleArea()
+            this.boardArea()
+            this.statusBar()
+            this.controlBar()
+            this.capturedArea()
+            this.moveHistory()
+          }
+          .width('100%')
+          .padding({ left: 16, right: 16, top: 12, bottom: 24 })
         }
         .width('100%')
-        .padding({ left: 16, right: 16, top: 12, bottom: 24 })
+        .height('100%')
+        .scrollable(ScrollDirection.Vertical)
+        .scrollBar(BarState.Auto)
       }
-      .width('100%')
-      .height('100%')
-      .scrollable(ScrollDirection.Vertical)
-      .scrollBar(BarState.Auto)
     }
     .width('100%')
     .height('100%')
     .backgroundColor('#F5F0E8')
+    .onAreaChange((_, newArea) => {
+      const w = newArea.width as number
+      const bp = w >= 720 ? 'lg' : 'sm'
+      if (bp !== this.breakpoint) {
+        this.breakpoint = bp
+      }
+    })
   }
 
   @Builder
@@ -253,6 +276,35 @@ export struct GameView {
 
   getMoveColor(move: Move): string {
     return move.piece.color === PieceColor.RED ? '#C0392B' : '#2C3E50'
+  }
+
+  @Builder
+  desktopLayout() {
+    Row() {
+      BoardCanvas({
+        board: this.board,
+        selectedPos: this.selectedPos,
+        validMoves: this.validMoves,
+        redrawTrigger: this.redrawTrigger,
+        onCellClick: (pos: Pos) => { this.onCellClick(pos) }
+      })
+      .shadow({ radius: 8, color: 'rgba(0,0,0,0.15)', offsetY: 4 })
+      .borderRadius(8)
+      .layoutWeight(1)
+
+      Column({ space: 12 }) {
+        this.titleArea()
+        this.statusBar()
+        this.controlBar()
+        this.capturedArea()
+        this.moveHistory()
+      }
+      .layoutWeight(1)
+      .padding({ left: 20, right: 8 })
+    }
+    .width('100%')
+    .height('100%')
+    .padding({ left: 24, right: 24, top: 24, bottom: 24 })
   }
 
   @Builder
