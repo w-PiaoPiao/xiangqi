@@ -23,7 +23,7 @@ export struct BoardCanvas {
   @Prop @Watch('onRedraw') redrawTrigger: number = 0
   onCellClick: ((pos: Pos) => void) | null = null
 
-  onRedraw(): void {
+  onRedraw(propName: string): void {
     if (this.w > 0 && this.h > 0) {
       this.drawAll()
     }
@@ -102,7 +102,7 @@ export struct BoardCanvas {
       ctx.lineWidth = 1; ctx.stroke()
 
       ctx.fillStyle = '#fff'
-      ctx.font = `bold ${Math.floor(radius * 1.9)}px sans-serif`
+      ctx.font = `bold ${Math.max(24, Math.floor(radius * 2.2))}px HarmonyOS Sans, sans-serif`
       ctx.textAlign = 'center'
       ctx.textBaseline = 'middle'
       ctx.fillText(piece.displayName, cx, cy + 1)

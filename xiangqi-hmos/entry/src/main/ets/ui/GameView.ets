@@ -57,6 +57,7 @@ export struct GameView {
       if (piece && piece.color === this.turn) {
         this.selectedPos = pos
         this.validMoves = this.engine.getValidMoves(pos)
+        this.redrawTrigger++
       }
       return
     }
@@ -66,12 +67,14 @@ export struct GameView {
     if (pos.row === sel.row && pos.col === sel.col) {
       this.selectedPos = null
       this.validMoves = []
+      this.redrawTrigger++
       return
     }
 
     if (piece && piece.color === this.turn) {
       this.selectedPos = pos
       this.validMoves = this.engine.getValidMoves(pos)
+      this.redrawTrigger++
       return
     }
 
@@ -85,6 +88,7 @@ export struct GameView {
 
     this.selectedPos = null
     this.validMoves = []
+    this.redrawTrigger++
   }
 
   onReset(): void {
